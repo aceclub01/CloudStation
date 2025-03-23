@@ -25,7 +25,8 @@ document.getElementById("newsForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const keyword = document.getElementById("keyword").value;
     const monthsBack = document.getElementById("months_back").value;
-    const response = await fetch(`/news?keyword=${keyword}&months_back=${monthsBack}`);
+    const language = document.getElementById("language").value;
+    const response = await fetch(`/news?keyword=${keyword}&months_back=${monthsBack}&language=${language}`);
     const data = await response.json();
 
     // Clear previous news and audio files
