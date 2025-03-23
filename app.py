@@ -14,14 +14,27 @@ from nltk import pos_tag
 from datetime import datetime, timedelta
 
 # Set a custom NLTK data path
-custom_path = '/Users/tslee/nltk_data'
-os.makedirs(custom_path, exist_ok=True)
-nltk.data.path.append(custom_path)
+# custom_path = '/Users/tslee/nltk_data'
+# os.makedirs(custom_path, exist_ok=True)
+# nltk.data.path.append(custom_path)
+
+# # Download NLTK data
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('wordnet')
+import nltk
+import os
+
+# Set NLTK data path to a writable directory
+nltk_data_path = "/tmp/nltk_data"
+os.makedirs(nltk_data_path, exist_ok=True)
+nltk.data.path.append(nltk_data_path)
 
 # Download NLTK data
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('wordnet')
+
 
 app = Flask(__name__)
 
