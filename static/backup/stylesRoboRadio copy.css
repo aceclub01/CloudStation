@@ -1,0 +1,22 @@
+#wordcloud {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 200px;
+    border: 1px solid #ccc;
+}
+
+.article {
+    margin-bottom: 20px;
+}
+
+.article a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.article a:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock News Radio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesRoboRadio.css') }}">
+</head>
+<body>
+    <h1>Stock News Radio</h1>
+    <form id="newsForm">
+        <label for="keyword">Enter stock or asset class:</label>
+        <input type="text" id="keyword" name="keyword" value="AAPL">
+        <label for="months_back">Retrieve news from the past:</label>
+        <select id="months_back" name="months_back">
+            <option value="1">1 month</option>
+            <option value="2">2 months</option>
+            <option value="6">6 months</option>
+        </select>
+        <button type="submit">Fetch News</button>
+    </form>
+    <div id="wordcloud"></div>
+    <h2>News:</h2>
+    <div id="news"></div>
+    <h2>Keywords:</h2>
+    <div id="keywords"></div>
+    <h2>Audio:</h2>
+    <audio id="audio" controls></audio>
+    <script src="{{ url_for('static', filename='scriptRoboRadio.js') }}"></script>
+</body>
+</html>

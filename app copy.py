@@ -12,8 +12,6 @@ import io
 import base64
 from nltk import pos_tag
 from datetime import datetime, timedelta
-import pandas as pd
-from googletrans import Translator
 
 # Set NLTK data path to a writable directory
 nltk_data_path = "/tmp/nltk_data"
@@ -47,14 +45,6 @@ def read_api_keys(file_path="apikeys.txt"):
 api_keys = read_api_keys()
 NEWS_API_KEY = api_keys.get("NEWS_API_KEY")
 GUARDIAN_API_KEY = api_keys.get("GUARDIAN_API_KEY")
-
-# Load stock symbols and company names
-def load_stock_symbols(filepath="stock_symbols.csv"):
-    """
-    Loads stock symbols and company names from a CSV file.
-    """
-    df = pd.read_csv(filepath)
-    return df[['Symbol', 'Name']].values.tolist()  # Returns a list of lists: [['AAPL', 'Apple Inc.'], ...]
 
 # Fetch news from News API
 def fetch_news_newsapi(keyword, from_date):
@@ -119,17 +109,11 @@ def generate_wordcloud(keywords):
 
     return wordcloud_base64
 
-# Convert news to speech (supports English and Chinese)
-def text_to_speech(text, lang="en", filename="news.mp3"):
-    tts = gTTS(text=text, lang=lang)
+# Convert news to speech (only for English articles)
+def text_to_speech(text, filename="news.mp3"):
+    tts = gTTS(text=text, lang="en")
     tts.save(filename)
     return filename
-
-# Translate text to Chinese
-def translate_to_chinese(text):
-    translator = Translator()
-    translation = translator.translate(text, dest='zh-cn')
-    return translation.text
 
 # API endpoint to fetch news and keywords
 @app.route("/news", methods=["GET"])
@@ -140,9 +124,6 @@ def get_news():
 
     results = []
     all_keywords = {"positive": {}, "negative": {}}
-
-    # Load stock symbols and company names
-    stock_symbols = load_stock_symbols()
 
     # Fetch news from NewsAPI
     newsapi_data = fetch_news_newsapi(keyword, from_date)
@@ -170,12 +151,10 @@ def get_news():
                 else:
                     all_keywords[sentiment][word] = score
 
-        # Convert news title to speech (supports English and Chinese)
+        # Convert news title to speech (only for English articles)
         audio_file = None
         if language == "en":
-            audio_file = text_to_speech(title, lang="en", filename=f"news_{i}.mp3")
-        elif language == "zh":
-            audio_file = text_to_speech(title, lang="zh-cn", filename=f"news_{i}.mp3")
+            audio_file = text_to_speech(title, f"news_{i}.mp3")
 
         results.append({
             "title": title,
@@ -184,6 +163,43 @@ def get_news():
             "published_at": published_at,
             "keywords": keywords,
             "audio_url": f"/audio/{audio_file}" if audio_file else None,
+            "language": language
+        })
+
+    # Fetch news from The Guardian API
+    guardian_data = fetch_news_guardian(keyword, from_date)
+    articles = guardian_data.get("response", {}).get("results", [])
+    for i, article in enumerate(articles[:5]):  # Limit to top 5 articles
+        title = article.get("webTitle", "") or ""
+        url = article.get("webUrl", "#")
+        published_at = article.get("webPublicationDate", "")
+        language = "en"  # Guardian API articles are in English
+
+        # Format the date
+        if published_at:
+            published_at = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ").strftime("%B %d, %Y")
+
+        news_text = title  # Guardian API does not provide a description
+        keywords = extract_keywords(news_text)
+
+        # Merge keywords from all articles
+        for sentiment, words in keywords.items():
+            for word, score in words.items():
+                if word in all_keywords[sentiment]:
+                    all_keywords[sentiment][word] += score
+                else:
+                    all_keywords[sentiment][word] = score
+
+        # Convert news title to speech (only for English articles)
+        audio_file = text_to_speech(title, f"guardian_{i}.mp3")
+
+        results.append({
+            "title": title,
+            "description": "",  # Guardian API does not provide a description
+            "url": url,
+            "published_at": published_at,
+            "keywords": keywords,
+            "audio_url": f"/audio/{audio_file}",
             "language": language
         })
 
